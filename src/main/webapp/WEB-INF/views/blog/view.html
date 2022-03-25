@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="/layout :: head"></head>
+<body>
+<h3>View Blogs</h3>
+<p>
+    <a th:href="@{/blogs}">
+        Back to blog list
+    </a>
+</p>
+<div id="detail">
+    <div class="cusdetail">
+        <label>Tiêu đề:</label>
+        <label th:text="${blog.tittle}"></label>
+    </div>
+    <div class="cusdetail">
+        <label>Nội dung:</label>
+        <label th:text="${blog.content}"></label>
+    </div>
+    <div>
+        <img th:src="@{/image/__${blog.getImage()}__}" alt="">
+    </div>
+</div>
+<footer th:replace="/layout :: footer"></footer>
+</body>
+</html>

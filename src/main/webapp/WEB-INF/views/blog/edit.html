@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout::head">
+</head>
+<body>
+<h3>Tạo blogs mới</h3>
+<a th:href="@{/blogs}">Quay lại danh sách</a>
+<div id="form">
+    <form th:action="@{/blogs/edit/__${id}__}" method="post" th:object="${blog}" enctype="multipart/form-data">
+        <div>
+            <label>Tiêu đề</label>
+            <input type="text" th:field = "*{tittle}" placeholder="tittle">
+        </div>
+        <div>
+            <label>Nội dung</label>
+            <input type="text" th:field = "*{content}" placeholder="content">
+        </div>
+        <div>
+            <img th:src="@{/image/__${blog.getImage()}__}" alt="">
+        </div>
+        <div>
+            <label>Ảnh</label>
+            <input type="file" th:field = "*{image}">
+        </div>
+
+
+        <input type="submit" value="Chỉnh sửa">
+    </form>
+</div>
+
+<footer th:replace="layout :: footer"></footer>
+</body>
+</html>

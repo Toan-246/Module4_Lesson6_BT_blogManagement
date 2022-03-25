@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head">
+</head>
+<body>
+<h3>Danh sách blog</h3>
+<a th:href="@{/blogs/create}">Tạo sản phẩm mới</a>
+<form action="/blogs">
+    <input type="text" placeholder="Search" name="q">
+    <button>Search</button>
+</form>
+<table id="blogs">
+    <tr>
+        <th>#</th>
+        <th>Tittle</th>
+        <th>Content</th>
+        <th>Image</th>
+        <th colspan="2">Action</th>
+    </tr>
+    <tr th:each="blog, loop:${blogs}" >
+        <td th:text="${loop.count}"></td>
+        <td>
+            <a th:href="@{/blogs/__${blog.id}__}" th:text="${blog.tittle}"></a>
+        </td>
+        <td th:text="${blog.content}"></td>
+        <td><img th:src="@{/image/__${blog.image}__}" alt=""></td>
+        <td><a th:href="@{/blogs/edit/__${blog.id}__}">Sửa</a></td>
+        <td><a th:href="@{/blogs/delete/__${blog.id}__}">Xóa</a></td>
+    </tr>
+</table>
+<footer th:replace="layout :: footer"></footer>
+</body>
+</html>
