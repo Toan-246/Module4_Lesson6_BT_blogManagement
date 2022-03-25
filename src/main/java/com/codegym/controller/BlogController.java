@@ -27,10 +27,10 @@ public class BlogController {
     private String uploadPath;
 
     @GetMapping("")
-    public ModelAndView showAllBlogs(@RequestParam Optional <String> q ) {
+    public ModelAndView showAllBlogs(@RequestParam(name = "q") Optional<String> q ) {
         ModelAndView modelAndView = new ModelAndView("blog/list");
         List<Blog> blogs = blogService.findAll();
-        if (q!=null){
+        if (q.isPresent()){
             blogs = blogService.findByName(q.get());
         }
         modelAndView.addObject("blogs", blogs);
