@@ -5,18 +5,19 @@ import com.codegym.repository.blog.IBlogRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.Optional;
+
 @Service
 public class BlogService implements IBlogService{
     @Autowired
-    private IBlogRepository blogRepository;
+	IBlogRepository blogRepository;
     @Override
-    public List<Blog> findAll() {
+    public Iterable<Blog> findAll() {
         return blogRepository.findAll();
     }
 
     @Override
-    public Blog findById(Long id) {
+    public Optional<Blog> findById(Long id) {
         return blogRepository.findById(id);
     }
 
@@ -27,12 +28,17 @@ public class BlogService implements IBlogService{
 
     @Override
     public void remove(Long id) {
-        blogRepository.remove(id);
+        blogRepository.deleteById(id);
     }
 
-    @Override
-    public List<Blog> findByName(String name) {
-        name = "%" + name + "%";
-        return blogRepository.findByName(name);
-    }
+	@Override
+	public Iterable<Blog> findAllByTittleContaining(String tittle) {
+		tittle = "%" + tittle + "%";
+		return blogRepository.findAllByTittleContaining(tittle);
+	}
+
+	@Override
+	public Iterable<Blog> findAllByCategory_Id(Long id) {
+		return blogRepository.findAllByCategory_Id(id);
+	}
 }

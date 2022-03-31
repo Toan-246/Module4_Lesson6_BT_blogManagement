@@ -1,10 +1,12 @@
 package com.codegym.repository.blog;
 
 import com.codegym.model.Blog;
-import com.codegym.repository.IGeneralRepository;
+import com.codegym.model.Category;
+import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
-public interface IBlogRepository extends IGeneralRepository <Blog> {
-    List <Blog> findByName (String name);
+@Repository
+public interface IBlogRepository extends PagingAndSortingRepository<Blog, Long> {
+	public Iterable<Blog> findAllByTittleContaining(String tittle);
+	Iterable<Blog>findAllByCategory_Id(Long id);
 }

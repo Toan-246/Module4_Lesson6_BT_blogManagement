@@ -3,7 +3,6 @@ package com.codegym.controller;
 import com.codegym.model.Blog;
 import com.codegym.model.BlogForm;
 import com.codegym.service.blog.IBlogService;
-import com.sun.org.apache.xpath.internal.operations.Mod;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -14,11 +13,10 @@ import org.springframework.web.servlet.ModelAndView;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
 
 @Controller
-@RequestMapping("/blogs")
+@RequestMapping("/blog")
 public class BlogController {
     @Autowired
     private IBlogService blogService;
@@ -29,9 +27,9 @@ public class BlogController {
     @GetMapping("")
     public ModelAndView showAllBlogs(@RequestParam(name = "q") Optional<String> q ) {
         ModelAndView modelAndView = new ModelAndView("blog/list");
-        List<Blog> blogs = blogService.findAll();
+        Iterable<Blog> blogs = blogService.findAll();
         if (q.isPresent()){
-            blogs = blogService.findByName(q.get());
+            blogs = blogService.findAllByTittleContaining(q.get());
         }
         modelAndView.addObject("blogs", blogs);
         return modelAndView;
@@ -54,7 +52,7 @@ public class BlogController {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Blog blog = new Blog(blogForm.getId(), blogForm.getTittle(), blogForm.getContent(), fileName);
+        Blog blog = new Blog(blogForm.getId(), blogForm.getTittle(), blogForm.getContent(), fileName, blogForm.getCategory());
         blogService.save(blog);
         return new ModelAndView("redirect:/blogs");
     }
@@ -62,7 +60,7 @@ public class BlogController {
     @GetMapping("/edit/{id}")
     ModelAndView showEditForm(@PathVariable Long id) {
         ModelAndView modelAndView = new ModelAndView("blog/edit");
-        Blog blog = blogService.findById(id);
+        Optional<Blog> blog = blogService.findById(id);
         modelAndView.addObject("blog", blog);
         return modelAndView;
     }
@@ -70,36 +68,37 @@ public class BlogController {
     @PostMapping("/edit/{id}")
     public ModelAndView editBlog(@PathVariable Long id, @ModelAttribute BlogForm blogForm) {
         MultipartFile img = blogForm.getImage();
-        Blog oldBlog = blogService.findById(id);
+        Optional<Blog> oldBlog = blogService.findById(id);
         if (img.getSize() != 0) {
             String fileName = blogForm.getImage().getOriginalFilename();
             long currentTime = System.currentTimeMillis();
             fileName = currentTime + fileName;
-            oldBlog.setImage(fileName);
+            oldBlog.get().setImage(fileName);
             try {
                 FileCopyUtils.copy(img.getBytes(), new File(uploadPath + fileName));
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        oldBlog.setTittle(blogForm.getTittle());
-        oldBlog.setContent(blogForm.getContent());
-        blogService.save(oldBlog);
+        oldBlog.get().setTittle(blogForm.getTittle());
+        oldBlog.get().setContent(blogForm.getContent());
+        oldBlog.get().setCategory(blogForm.getCategory());
+        blogService.save(oldBlog.get());
         return new ModelAndView("redirect:/blogs");
     }
 
     @GetMapping("delete/{id}")
     public ModelAndView showDeleteForm(@PathVariable Long id) {
         ModelAndView modelAndView = new ModelAndView("/blog/delete");
-        Blog blog = blogService.findById(id);
+        Optional<Blog> blog = blogService.findById(id);
         modelAndView.addObject("blog", blog);
         return modelAndView;
     }
 
     @PostMapping("delete/{id}")
     public ModelAndView deleteBlog(@PathVariable Long id) {
-        Blog blog = blogService.findById(id);
-        File file = new File(uploadPath + blog.getImage());
+		Optional<Blog> blog = blogService.findById(id);
+        File file = new File(uploadPath + blog.get().getImage());
         if (file.exists()) {
             file.delete();
         }
@@ -110,7 +109,7 @@ public class BlogController {
     @GetMapping ("/{id}")
     public ModelAndView showBlogDetail (@PathVariable Long id){
         ModelAndView modelAndView = new ModelAndView("/blog/view");
-        Blog blog = blogService.findById(id);
+		Optional<Blog> blog = blogService.findById(id);
         modelAndView.addObject("blog", blog);
         return modelAndView;
     }

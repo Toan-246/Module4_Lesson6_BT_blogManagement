@@ -8,6 +8,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.JpaVendorAdapter;
@@ -29,104 +31,107 @@ import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 import java.util.Properties;
 
-@Configuration //Để đánh dấu là 1 class config
-@ComponentScan("com.codegym") // Để quét cac compornent như controller, service, repository
-@EnableWebMvc // hiện lên là Web MVC
-@PropertySource("classpath:upload-file.properties") // cấu hình đường dẫn upload file
-@EnableTransactionManagement //sử dụng để quản lý transaction
+@EnableWebMvc
+@Configuration
+@ComponentScan("com.codegym")
+@EnableSpringDataWebSupport//Để hỗ trợ phân trang
+@EnableJpaRepositories("com.codegym.repository") //Để quét các repository
+@EnableTransactionManagement//annoutation sử dụng để quản lý transaction
+@PropertySource("classpath:upload-file.properties")
+
 public class AppConfig implements WebMvcConfigurer, ApplicationContextAware {
-    private ApplicationContext applicationContext;
+	private ApplicationContext applicationContext;
 
-    @Value("${file-upload}")//giá trị trong file upload-file.properties
-    private String uploadPath;
+	@Value("${file-upload}")//giá trị trong file upload-file.properties
+	private String uploadPath;
 
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
-    }
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
+	}
 
-    //1. Cấu hình Thymleaf
-    @Bean
-    public SpringResourceTemplateResolver templateResolver() {
-        SpringResourceTemplateResolver templateResolver = new SpringResourceTemplateResolver();
-        templateResolver.setApplicationContext(applicationContext);
-        templateResolver.setPrefix("/WEB-INF/views/");
-        templateResolver.setSuffix(".html");
-        templateResolver.setTemplateMode(TemplateMode.HTML);
-        templateResolver.setCharacterEncoding("UTF-8");
-        return templateResolver;
-    }
+	//1. Cấu hình Thymleaf
+	@Bean
+	public SpringResourceTemplateResolver templateResolver() {
+		SpringResourceTemplateResolver templateResolver = new SpringResourceTemplateResolver();
+		templateResolver.setApplicationContext(applicationContext);
+		templateResolver.setPrefix("/WEB-INF/views/");
+		templateResolver.setSuffix(".html");
+		templateResolver.setTemplateMode(TemplateMode.HTML);
+		templateResolver.setCharacterEncoding("UTF-8");
+		return templateResolver;
+	}
 
-    @Bean
-    public SpringTemplateEngine templateEngine() {
-        SpringTemplateEngine templateEngine = new SpringTemplateEngine();
-        templateEngine.setTemplateResolver(templateResolver());
-        return templateEngine;
-    }
+	@Bean
+	public SpringTemplateEngine templateEngine() {
+		SpringTemplateEngine templateEngine = new SpringTemplateEngine();
+		templateEngine.setTemplateResolver(templateResolver());
+		return templateEngine;
+	}
 
-    @Bean
-    public ThymeleafViewResolver viewResolver() {
-        ThymeleafViewResolver viewResolver = new ThymeleafViewResolver();
-        viewResolver.setTemplateEngine(templateEngine());
-        viewResolver.setCharacterEncoding("UTF-8");
-        return viewResolver;
-    }
+	@Bean
+	public ThymeleafViewResolver viewResolver() {
+		ThymeleafViewResolver viewResolver = new ThymeleafViewResolver();
+		viewResolver.setTemplateEngine(templateEngine());
+		viewResolver.setCharacterEncoding("UTF-8");
+		return viewResolver;
+	}
 
-    //2. Cấu hình upload File
+	//2. Cấu hình upload File
 
-    @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/image/**")
-                .addResourceLocations("file:" + uploadPath);
-    }
+	@Override
+	public void addResourceHandlers(ResourceHandlerRegistry registry) {
+		registry.addResourceHandler("/image/**")
+				.addResourceLocations("file:" + uploadPath);
+	}
 
-    @Bean
-    public CommonsMultipartResolver multipartResolver() {
-        CommonsMultipartResolver multipartResolver = new CommonsMultipartResolver();
-        multipartResolver.setMaxUploadSizePerFile(52428800);
-        return multipartResolver;
-    }
+	@Bean
+	public CommonsMultipartResolver multipartResolver() {
+		CommonsMultipartResolver multipartResolver = new CommonsMultipartResolver();
+		multipartResolver.setMaxUploadSizePerFile(52428800);
+		return multipartResolver;
+	}
 
-    //3.//Cấu hình JPA,Hibernate
-    @Bean //Bean để khởi tạo entity manager
-    public EntityManager entityManager(EntityManagerFactory entityManagerFactory) {
-        return entityManagerFactory.createEntityManager();
-    }
+	//3.//Cấu hình JPA,Hibernate
+	@Bean //Bean để khởi tạo entity manager
+	public EntityManager entityManager(EntityManagerFactory entityManagerFactory) {
+		return entityManagerFactory.createEntityManager();
+	}
 
-    @Bean //Bean để khởi tạo entity manager factory
-    public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
-        LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
-        em.setDataSource(datasource());
-        em.setPackagesToScan("com.codegym.model");
-        //VenderAdapter sử dụng để cấu hình liên quan đến hibernate
-        JpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
-        em.setJpaVendorAdapter(vendorAdapter);
-        em.setJpaProperties(additionalProperties());
-        return em;
-    }
+	@Bean //Bean để khởi tạo entity manager factory
+	public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
+		LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
+		em.setDataSource(datasource());
+		em.setPackagesToScan("com.codegym.model");
+		//VenderAdapter sử dụng để cấu hình liên quan đến hibernate
+		JpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+		em.setJpaVendorAdapter(vendorAdapter);
+		em.setJpaProperties(additionalProperties());
+		return em;
+	}
 
-    @Bean //Data source để cấu hình đường dẫn đến DB
-    public DataSource datasource() {
-        DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName("com.mysql.jdbc.Driver");
-        dataSource.setUrl("jdbc:mysql://localhost:3306/blog_management_module4_lesson6");
-        dataSource.setUsername("root");
-        dataSource.setPassword("123456");
-        return dataSource;
-    }
+	@Bean //Data source để cấu hình đường dẫn đến DB
+	public DataSource datasource() {
+		DriverManagerDataSource dataSource = new DriverManagerDataSource();
+		dataSource.setDriverClassName("com.mysql.jdbc.Driver");
+		dataSource.setUrl("jdbc:mysql://localhost:3306/blog_management_module4_lesson6");
+		dataSource.setUsername("root");
+		dataSource.setPassword("123456");
+		return dataSource;
+	}
 
-    @Bean //Bean để khai báo quản lý transaction => JPA tự quản lý
-    public PlatformTransactionManager transactionManager(EntityManagerFactory entityManagerFactory) {
-        JpaTransactionManager transactionManager = new JpaTransactionManager();
-        transactionManager.setEntityManagerFactory(entityManagerFactory);
-        return transactionManager;
-    }
+	@Bean //Bean để khai báo quản lý transaction => JPA tự quản lý
+	public PlatformTransactionManager transactionManager(EntityManagerFactory entityManagerFactory) {
+		JpaTransactionManager transactionManager = new JpaTransactionManager();
+		transactionManager.setEntityManagerFactory(entityManagerFactory);
+		return transactionManager;
+	}
 
-    //Phương thức để khai báo các cấu hình liên quan hibernate
-    private Properties additionalProperties() {
-        Properties properties = new Properties();
-        properties.setProperty("hibernate.hbm2ddl.auto", "update");
-        properties.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQL5Dialect");
-        return properties;
-    }
+	//Phương thức để khai báo các cấu hình liên quan hibernate
+	private Properties additionalProperties() {
+		Properties properties = new Properties();
+		properties.setProperty("hibernate.hbm2ddl.auto", "update");
+		properties.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQL5Dialect");
+		return properties;
+	}
 }
