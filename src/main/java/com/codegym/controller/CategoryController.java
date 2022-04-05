@@ -15,13 +15,12 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping ("/categories")
 public class CategoryController {
 	@Autowired
 	private ICategoryService categoryService;
 	@Autowired
 	private IBlogService blogService;
-	@GetMapping
+	@GetMapping("/categories")
 	public ResponseEntity<Iterable<Category>> findAllCategory (){
 		List<Category> categories = (List<Category>) categoryService.findAll();
 		if (categories.isEmpty()){
@@ -29,7 +28,7 @@ public class CategoryController {
 		}
 		return new ResponseEntity<>(categories, HttpStatus.OK);
 	}
-	@GetMapping("/{id}")
+	@GetMapping("/categories/{id}")
 	public ResponseEntity<Iterable<Blog>>findAllBlogByCategoryId (@PathVariable Long id){
 		List<Blog> categories = (List<Blog>)blogService.findAllByCategory_Id(id);
 		if (categories.isEmpty()){

@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.util.Optional;
 
 @Controller
-@RequestMapping("/blog")
 public class BlogController {
     @Autowired
     private IBlogService blogService;
@@ -24,7 +23,12 @@ public class BlogController {
     @Value("${file-upload}")//giá trị trong file upload-file.properties
     private String uploadPath;
 
-    @GetMapping("")
+    @GetMapping ("/")
+    public ModelAndView index (){
+        return new ModelAndView("index");
+    }
+
+    @GetMapping("/blogs")
     public ModelAndView showAllBlogs(@RequestParam(name = "q") Optional<String> q ) {
         ModelAndView modelAndView = new ModelAndView("blog/list");
         Iterable<Blog> blogs = blogService.findAll();
@@ -35,14 +39,14 @@ public class BlogController {
         return modelAndView;
     }
 
-    @GetMapping("/create")
+    @GetMapping("/blogs/create")
     public ModelAndView showCreateForm() {
         ModelAndView modelAndView = new ModelAndView("blog/create");
         modelAndView.addObject("blog", new BlogForm());
         return modelAndView;
     }
 
-    @PostMapping("/create")
+    @PostMapping("/blogs/create")
     public ModelAndView createBlog(@ModelAttribute BlogForm blogForm) {
         String fileName = blogForm.getImage().getOriginalFilename();
         long currentTime = System.currentTimeMillis();
@@ -57,7 +61,7 @@ public class BlogController {
         return new ModelAndView("redirect:/blogs");
     }
 
-    @GetMapping("/edit/{id}")
+    @GetMapping("/blogs/edit/{id}")
     ModelAndView showEditForm(@PathVariable Long id) {
         ModelAndView modelAndView = new ModelAndView("blog/edit");
         Optional<Blog> blog = blogService.findById(id);
@@ -65,7 +69,7 @@ public class BlogController {
         return modelAndView;
     }
 
-    @PostMapping("/edit/{id}")
+    @PostMapping("/blogs/edit/{id}")
     public ModelAndView editBlog(@PathVariable Long id, @ModelAttribute BlogForm blogForm) {
         MultipartFile img = blogForm.getImage();
         Optional<Blog> oldBlog = blogService.findById(id);
@@ -87,7 +91,7 @@ public class BlogController {
         return new ModelAndView("redirect:/blogs");
     }
 
-    @GetMapping("delete/{id}")
+    @GetMapping("/blogs/delete/{id}")
     public ModelAndView showDeleteForm(@PathVariable Long id) {
         ModelAndView modelAndView = new ModelAndView("/blog/delete");
         Optional<Blog> blog = blogService.findById(id);
@@ -95,7 +99,7 @@ public class BlogController {
         return modelAndView;
     }
 
-    @PostMapping("delete/{id}")
+    @PostMapping("/blogs/delete/{id}")
     public ModelAndView deleteBlog(@PathVariable Long id) {
 		Optional<Blog> blog = blogService.findById(id);
         File file = new File(uploadPath + blog.get().getImage());
@@ -106,7 +110,7 @@ public class BlogController {
         return new ModelAndView("redirect:/blogs");
     }
 
-    @GetMapping ("/{id}")
+    @GetMapping ("/blogs/{id}")
     public ModelAndView showBlogDetail (@PathVariable Long id){
         ModelAndView modelAndView = new ModelAndView("/blog/view");
 		Optional<Blog> blog = blogService.findById(id);
